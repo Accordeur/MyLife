@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-struct Task {
+struct TaskTable {
     uint64_t task_id;
     std::string title;
     int32_t starred;
@@ -55,12 +55,12 @@ struct Task {
     std::string text_tag;
 };
 
-struct Note {
+struct NoteTable {
     uint64_t note_id;
     std::string text;
 };
 
-struct Reminder {
+struct ReminderTable {
     uint64_t reminder_id;
     uint64_t reminder_actions;
     int32_t repeat_counter;
@@ -75,7 +75,7 @@ struct Reminder {
     int32_t use_individual_actions;
 };
 
-struct Recurrence {
+struct RecurrenceTable {
     uint64_t recurrence_id;
     int32_t day_of_month;
     int32_t day_of_week_mask;
@@ -96,7 +96,7 @@ struct Recurrence {
     int64_t pattern_start_date;
 };
 
-struct Flag {
+struct FlagTable {
     uint64_t flag_id;
     std::string title;
     std::string uuid;
@@ -104,7 +104,7 @@ struct Flag {
     uint64_t note_id;
 };
 
-struct Context {
+struct ContextTable {
     uint64_t context_id;
     std::string title;
     int32_t hide_from_todo;
@@ -120,19 +120,19 @@ struct Context {
     uint64_t note_id;
 };
 
-struct ContextToAssignedTask {
+struct ContextToAssignedTaskTable {
     uint64_t context_to_assigned_task_id;
     uint64_t assigned_task_id;
     uint64_t context_id;
 };
 
-struct DependentContextToContextContext {
+struct DependentContextToContextContextTable {
     uint64_t dependent_context_to_context_context_id;
     uint64_t master_context_id;
     uint64_t dependent_context_id;
 };
 
-struct DependentTaskToMasterTask {
+struct DependentTaskToMasterTaskTable {
     uint64_t dependent_task_to_master_task_id;
     uint64_t master_task_id;
     uint64_t dependent_task_id;

@@ -8,7 +8,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
 find_package(CAF REQUIRED COMPONENTS core io)
 
-add_executable(MyLife main.cpp database/database.cpp database/database.h database/tables.h)
+add_executable(MyLife main.cpp GTD_Service/database/database.cpp GTD_Service/database/database.h GTD_Service/database/tables.h GTD_Service/GtdService.cpp GTD_Service/GtdService.h GTD_Service/Task.cpp GTD_Service/Task.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlite_orm::sqlite_orm)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
