@@ -9,18 +9,22 @@ DataBase::DataBase(const std::filesystem::path& path): storage(initDB(path)){
     storage.sync_schema();
 }
 
-int32_t DataBase::create(Crud &crud) {
+GTD_RESULT DataBase::create(Crud &crud) {
     return crud.create(storage);
 }
 
-int32_t DataBase::update(Crud &crud) {
+GTD_RESULT DataBase::update(Crud &crud) {
     return crud.update(storage);
 }
 
-int32_t DataBase::remove(Crud &crud) {
+GTD_RESULT DataBase::remove(Crud &crud) {
     return crud.remove(storage);
 }
 
-int32_t DataBase::query(Crud &crud) {
+GTD_RESULT DataBase::query(Crud &crud) {
     return crud.query(storage);
+}
+
+DataBase::~DataBase() {
+
 }

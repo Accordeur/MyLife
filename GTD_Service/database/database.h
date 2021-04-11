@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <type_traits>
 #include "tables.h"
+#include "../error_type.h"
 
 class Crud;
 
@@ -18,7 +19,6 @@ inline auto initDB(const std::filesystem::path& path) {
                                                            sqlite_orm::make_column("title", &TaskTable::title),
                                                            sqlite_orm::make_column("starred", &TaskTable::starred),
                                                            sqlite_orm::make_column("hide_in_todo", &TaskTable::hide_in_todo),
-                                                           sqlite_orm::make_column("bookmark", &TaskTable::bookmark),
                                                            sqlite_orm::make_column("complete_in_order", &TaskTable::complete_in_order),
                                                            sqlite_orm::make_column("inherit_date", &TaskTable::inherit_date),
                                                            sqlite_orm::make_column("folder", &TaskTable::folder),
@@ -26,7 +26,6 @@ inline auto initDB(const std::filesystem::path& path) {
                                                            sqlite_orm::make_column("project", &TaskTable::project),
                                                            sqlite_orm::make_column("check_all_dependency", &TaskTable::check_all_dependency),
                                                            sqlite_orm::make_column("has_contexts", &TaskTable::has_contexts),
-                                                           sqlite_orm::make_column("expanded", &TaskTable::expanded),
                                                            sqlite_orm::make_column("effort", &TaskTable::effort),
                                                            sqlite_orm::make_column("goal", &TaskTable::goal),
                                                            sqlite_orm::make_column("importance", &TaskTable::importance),
@@ -141,11 +140,12 @@ public:
     DataBase& operator=(const DataBase&&) = delete;
 
     explicit DataBase(const std::filesystem::path& path);
+    ~DataBase();
 
-    int32_t create(Crud& crud);
-    int32_t update(Crud& crud);
-    int32_t remove(Crud& crud);
-    int32_t query(Crud& crud);
+    GTD_RESULT create(Crud& crud);
+    GTD_RESULT update(Crud& crud);
+    GTD_RESULT remove(Crud& crud);
+    GTD_RESULT query(Crud& crud);
     Storage& sql() {return storage;};
 private:
     Storage storage;
@@ -153,10 +153,10 @@ private:
 
 class Crud {
 public:
-    virtual int32_t create(DataBase::Storage& storage) = 0;
-    virtual int32_t update(DataBase::Storage& storage) = 0;
-    virtual int32_t remove(DataBase::Storage& storage) = 0;
-    virtual int32_t query(DataBase::Storage& storage) = 0;
+    virtual GTD_RESULT create(DataBase::Storage& storage) = 0;
+    virtual GTD_RESULT update(DataBase::Storage& storage) = 0;
+    virtual GTD_RESULT remove(DataBase::Storage& storage) = 0;
+    virtual GTD_RESULT query(DataBase::Storage& storage) = 0;
 
     virtual ~Crud() = default;
 };

@@ -9,20 +9,19 @@
 #include <string>
 #include <vector>
 
+constexpr const int64_t ID_UNINIT = -1;
 struct TaskTable {
-    uint64_t task_id;
+    int64_t task_id = ID_UNINIT;
     std::string title;
     int32_t starred;
     int32_t hide_in_todo;
-    int32_t bookmark;
     int32_t complete_in_order;
-    int32_t inherit_date;
+    int64_t inherit_date;
     int32_t folder;
     int32_t generated_by_recurrence;
     int32_t project;
     int32_t check_all_dependency;
     int32_t has_contexts;
-    int32_t expanded;
     int32_t effort;
     int32_t goal;
     int32_t importance;
@@ -46,22 +45,22 @@ struct TaskTable {
     int64_t starred_date;
     std::string uuid;
     int32_t version;
-    uint64_t note_id;
-    uint64_t reminder_id;
-    uint64_t recurrence_id;
-    uint64_t flag_id;
-    uint64_t parent_id;
-    uint64_t subtask_ordinal;
+    int64_t note_id;
+    int64_t reminder_id;
+    int64_t recurrence_id;
+    int64_t flag_id;
+    int64_t parent_id;
+    int32_t subtask_ordinal;
     std::string text_tag;
 };
 
 struct NoteTable {
-    uint64_t note_id;
+    int64_t note_id = ID_UNINIT;
     std::string text;
 };
 
 struct ReminderTable {
-    uint64_t reminder_id;
+    int64_t reminder_id = ID_UNINIT;
     uint64_t reminder_actions;
     int32_t repeat_counter;
     int32_t stop_after;
@@ -76,7 +75,7 @@ struct ReminderTable {
 };
 
 struct RecurrenceTable {
-    uint64_t recurrence_id;
+    int64_t recurrence_id = ID_UNINIT;
     int32_t day_of_month;
     int32_t day_of_week_mask;
     int32_t month_of_year;
@@ -97,15 +96,15 @@ struct RecurrenceTable {
 };
 
 struct FlagTable {
-    uint64_t flag_id;
+    int64_t flag_id = ID_UNINIT;
     std::string title;
     std::string uuid;
     int32_t version;
-    uint64_t note_id;
+    int64_t note_id;
 };
 
 struct ContextTable {
-    uint64_t context_id;
+    int64_t context_id = ID_UNINIT;
     std::string title;
     int32_t hide_from_todo;
     int32_t hide_from_item_props;
@@ -117,25 +116,25 @@ struct ContextTable {
     int32_t notify_exiting;
     std::string uuid;
     int32_t version;
-    uint64_t note_id;
+    int64_t note_id;
 };
 
 struct ContextToAssignedTaskTable {
-    uint64_t context_to_assigned_task_id;
-    uint64_t assigned_task_id;
-    uint64_t context_id;
+    int64_t context_to_assigned_task_id = ID_UNINIT;
+    int64_t assigned_task_id;
+    int64_t context_id;
 };
 
 struct DependentContextToContextContextTable {
-    uint64_t dependent_context_to_context_context_id;
-    uint64_t master_context_id;
-    uint64_t dependent_context_id;
+    int64_t dependent_context_to_context_context_id = ID_UNINIT;
+    int64_t master_context_id;
+    int64_t dependent_context_id;
 };
 
 struct DependentTaskToMasterTaskTable {
-    uint64_t dependent_task_to_master_task_id;
-    uint64_t master_task_id;
-    uint64_t dependent_task_id;
+    int64_t dependent_task_to_master_task_id = ID_UNINIT;
+    int64_t master_task_id;
+    int64_t dependent_task_id;
 };
 
 
