@@ -11,9 +11,15 @@ find_package(GTest CONFIG REQUIRED)
 find_package(glog CONFIG REQUIRED)
 find_package(CAF REQUIRED COMPONENTS core io)
 find_package(Boost REQUIRED)
+find_package(Threads REQUIRED)
 
+include_directories(${GTEST_INCLUDE_DIRS})
+
+file(GLOB_RECURSE TEST_SRC_LIST "test/*.cpp")
 file(GLOB_RECURSE GTD_SRC_LIST "GTD_Service/*.cpp")
-add_executable(MyLife main.cpp ${GTD_SRC_LIST})
+add_executable(MyLife main.cpp ${GTD_SRC_LIST} ${TEST_SRC_LIST})
+
+
 
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlite_orm::sqlite_orm)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
@@ -22,3 +28,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CAF_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CAF_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CAF_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost)
+target_link_libraries(${PROJECT_NAME}  ${CMAKE_THREAD_LIBS_INIT})
+
+
+add_test(Test MyLifeTests)
+enable_testing()

@@ -44,7 +44,7 @@ public:
         Suspended = 75,
         Completed = 100
     };
-    enum class ReviewRate: int32_t {
+    enum class ReviewType: int32_t {
         None,
         Day,
         Weekly,
@@ -67,7 +67,8 @@ public:
     bool is_complete_in_order() const;
     void complete_in_order(bool order);
 
-    //inherit_date;
+    bool is_inherit_date() const;
+    void set_inherit_date(bool mark);
 
     bool is_folder() const;
     void set_folder_flag(bool mark);
@@ -100,8 +101,8 @@ public:
     int32_t get_review_rate() const;
     void set_review_rate(int32_t every);
 
-    ReviewRate get_review_recurrence_type() const;
-    void set_review_recurrence_type(ReviewRate type);
+    ReviewType get_review_recurrence_type() const;
+    void set_review_recurrence_type(ReviewType type);
 
     //depend_postpone
 

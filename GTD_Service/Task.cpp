@@ -11,9 +11,11 @@ using namespace sqlite_orm;
 
 Task::Task(DataBase &dataBase) : Crud(dataBase), taskTable({}){
     taskTable.task_id = ID_UNINIT;
+    taskTable.inherit_date = true;
     taskTable.urgency = static_cast<int32_t>(Urgency::Normal);
     taskTable.importance = static_cast<int32_t>(Importance::Normal);
     taskTable.effort = static_cast<int32_t>(Effort::Normal);
+    taskTable.project_status = static_cast<int32_t>(ProjectStatus::InProgress);
     //uuid
     taskTable.note_id = ID_UNINIT;
     taskTable.reminder_id = ID_UNINIT;
@@ -45,6 +47,7 @@ GTD_RESULT Task::remove() {
         return GTD_PARA_INVALID;
     }
     datebase.sql().remove_all<TaskTable>(where(c(&TaskTable::task_id) == taskTable.task_id));
+    taskTable.task_id = ID_UNINIT;
     return GTD_OK;
 }
 
@@ -165,11 +168,11 @@ void Task::set_review_rate(int32_t every) {
     taskTable.review_every = every;
 }
 
-Task::ReviewRate Task::get_review_recurrence_type() const {
-    return static_cast<ReviewRate>(taskTable.review_recurrence_type);
+Task::ReviewType Task::get_review_recurrence_type() const {
+    return static_cast<ReviewType>(taskTable.review_recurrence_type);
 }
 
-void Task::set_review_recurrence_type(Task::ReviewRate type) {
+void Task::set_review_recurrence_type(Task::ReviewType type) {
     taskTable.review_recurrence_type = static_cast<int32_t>(type);
 }
 
@@ -192,5 +195,13 @@ std::string Task::get_note() const {
 
 void Task::set_note(std::string) {
 
+}
+
+bool Task::is_inherit_date() const {
+    return taskTable.inherit_date;
+}
+
+void Task::set_inherit_date(bool mark) {
+    taskTable.inherit_date = mark;
 }
 
