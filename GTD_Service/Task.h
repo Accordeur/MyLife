@@ -6,41 +6,46 @@
 #define MYLIFE_TASK_H
 #include "database/tables.h"
 #include "database/database.h"
+#include <boost/uuid/uuid.hpp>
 
-class Task: public Crud {
+class Task: protected Crud {
 public:
-    GTD_RESULT create(DataBase::Storage& storage) override final;
-    GTD_RESULT update(DataBase::Storage& storage) override final;
-    GTD_RESULT remove(DataBase::Storage& storage) override final;
-    GTD_RESULT query(DataBase::Storage& storage) override final;
+    Task() = delete;
+    Task(DataBase& dataBase);
+    Task(const Task& task) = default;
+    Task& operator=(const Task& task) = default;
+    Task(Task&& task) = default;
+    Task& operator=(Task&& task) = default;
 
-    enum Effort: int32_t {
+    enum class Effort: int32_t {
         Relaxed = 20,
         Easy = 40,
         Normal = 60,
         Hard = 80,
         Crazy = 100
     };
-    enum Importance: int32_t {
+    enum class Importance: int32_t {
         Unimportant = 20,
         LittleImportant = 40,
-        Important = 60,
+        Normal = 60,
         SomeImportant = 80,
         VeryImportant = 100
     };
-    enum Urgency: int32_t {
-        NonUrgent = 25,
-        //Urgent = 50,
-        LittleUrgent = 75,
+    enum class Urgency: int32_t {
+        NonUrgent = 20,
+        LittleUrgent = 40,
+        Normal = 60,
+        SomeUrgent = 80,
         VeryUrgent = 100
     };
-    enum ProjectStatus: int32_t {
+    enum class ProjectStatus: int32_t {
         NoStarted = 25,
         InProgress = 50,
         Suspended = 75,
         Completed = 100
     };
-    enum ReviewRate: int32_t {
+    enum class ReviewRate: int32_t {
+        None,
         Day,
         Weekly,
         Month,
@@ -100,7 +105,7 @@ public:
 
     //depend_postpone
 
-    std::tuple<std::chrono::minutes, std::chrono::minutes> get_estimate_time() const;
+    [[nodiscard]] std::tuple<std::chrono::minutes, std::chrono::minutes> get_estimate_time() const;
     void set_estimate_time(std::chrono::minutes min, std::chrono::minutes max);
 
     //local_start_date
@@ -109,8 +114,18 @@ public:
     //completion_date
     //created_date
     //last_modified
-    
 
+    boost::uuids::uuid get_uuid() const;
+
+    std::string get_note() const;
+    void set_note(std::string);
+
+
+protected:
+    GTD_RESULT create() override final;
+    GTD_RESULT update() override final;
+    GTD_RESULT remove() override final;
+    GTD_RESULT query() override final;
 
 private:
     std::chrono::system_clock::time_point inherit_date;
@@ -124,7 +139,7 @@ private:
     std::chrono::system_clock::time_point next_review_date;
     std::chrono::system_clock::time_point starred_date;
 
-
+    std::string note;
     TaskTable taskTable;
 };
 

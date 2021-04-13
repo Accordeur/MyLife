@@ -10,6 +10,7 @@
 #include <vector>
 
 constexpr const int64_t ID_UNINIT = -1;
+constexpr const int64_t ID_ROOT = 1;
 struct TaskTable {
     int64_t task_id = ID_UNINIT;
     std::string title;
@@ -30,9 +31,9 @@ struct TaskTable {
     int32_t review_recurrence_type;
     int32_t urgency;
     int32_t review_every;
-    double depend_postpone;
-    double estimate_min;
-    double estimate_max;
+    int64_t depend_postpone;
+    int64_t estimate_min;
+    int64_t estimate_max;
     int64_t local_start_date;
     int64_t local_due_date;
     std::string time_zone;

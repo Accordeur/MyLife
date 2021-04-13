@@ -153,12 +153,22 @@ private:
 
 class Crud {
 public:
-    virtual GTD_RESULT create(DataBase::Storage& storage) = 0;
-    virtual GTD_RESULT update(DataBase::Storage& storage) = 0;
-    virtual GTD_RESULT remove(DataBase::Storage& storage) = 0;
-    virtual GTD_RESULT query(DataBase::Storage& storage) = 0;
+    Crud() = delete;
+    Crud(DataBase& db): datebase(db){};
+    Crud(const Crud& crud) = default;
+    Crud& operator=(const Crud& crud) = default;
+    Crud(Crud&& crud) = default;
+    Crud& operator=(Crud&& crud) = default;
+
+    virtual GTD_RESULT create() = 0;
+    virtual GTD_RESULT update() = 0;
+    virtual GTD_RESULT remove() = 0;
+    virtual GTD_RESULT query() = 0;
 
     virtual ~Crud() = default;
+
+protected:
+    DataBase& datebase;
 };
 
 

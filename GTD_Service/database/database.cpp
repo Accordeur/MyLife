@@ -10,19 +10,19 @@ DataBase::DataBase(const std::filesystem::path& path): storage(initDB(path)){
 }
 
 GTD_RESULT DataBase::create(Crud &crud) {
-    return crud.create(storage);
+    return crud.create();
 }
 
 GTD_RESULT DataBase::update(Crud &crud) {
-    return crud.update(storage);
+    return crud.update();
 }
 
 GTD_RESULT DataBase::remove(Crud &crud) {
-    return crud.remove(storage);
+    return crud.remove();
 }
 
 GTD_RESULT DataBase::query(Crud &crud) {
-    return crud.query(storage);
+    return crud.query();
 }
 
 DataBase::~DataBase() {
