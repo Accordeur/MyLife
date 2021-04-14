@@ -9,7 +9,18 @@
 
 class Flag: public Crud {
 public:
+    Flag() = delete;
+    explicit Flag(DataBase& dataBase);
+    Flag(const Flag&) = default;
+    Flag& operator=(const Flag&) = default;
+    Flag(Flag&&) = default;
+    Flag& operator=(Flag&&) = default;
 
+protected:
+    GTD_RESULT create() override final;
+    GTD_RESULT update() override final;
+    GTD_RESULT remove() override final;
+    GTD_RESULT query() override final;
 private:
     FlagTable flagTable;
 };

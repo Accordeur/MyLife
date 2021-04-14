@@ -9,7 +9,11 @@
 
 using namespace sqlite_orm;
 
-Task::Task(DataBase &dataBase) : Crud(dataBase), taskTable({}){
+Task::Task(DataBase &dataBase) : Crud(dataBase),
+                                 reminder(dataBase),
+                                 recurrence(dataBase),
+                                 flag(dataBase),
+                                 taskTable({}) {
     taskTable.task_id = ID_UNINIT;
     taskTable.inherit_date = true;
     taskTable.urgency = static_cast<int32_t>(Urgency::Normal);
@@ -190,11 +194,11 @@ boost::uuids::uuid Task::get_uuid() const {
 }
 
 std::string Task::get_note() const {
-    return std::string();
+    return note;
 }
 
-void Task::set_note(std::string) {
-
+void Task::set_note(std::string note) {
+    this->note = note;
 }
 
 bool Task::is_inherit_date() const {
@@ -203,5 +207,17 @@ bool Task::is_inherit_date() const {
 
 void Task::set_inherit_date(bool mark) {
     taskTable.inherit_date = mark;
+}
+
+Reminder& Task::get_reminder() {
+    return reminder;
+}
+
+Recurrence& Task::get_recurrence() {
+    return recurrence;
+}
+
+Flag& Task::get_flag() {
+    return flag;
 }
 

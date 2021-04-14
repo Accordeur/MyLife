@@ -4,14 +4,17 @@
 
 #ifndef MYLIFE_TASK_H
 #define MYLIFE_TASK_H
+#include <boost/uuid/uuid.hpp>
 #include "database/tables.h"
 #include "database/database.h"
-#include <boost/uuid/uuid.hpp>
+#include "Reminder.h"
+#include "Recurrence.h"
+#include "Flag.h"
 
 class Task: protected Crud {
 public:
     Task() = delete;
-    Task(DataBase& dataBase);
+    explicit Task(DataBase& dataBase);
     Task(const Task& task) = default;
     Task& operator=(const Task& task) = default;
     Task(Task&& task) = default;
@@ -119,8 +122,11 @@ public:
     boost::uuids::uuid get_uuid() const;
 
     std::string get_note() const;
-    void set_note(std::string);
+    void set_note(std::string note);
 
+    Reminder& get_reminder();
+    Recurrence& get_recurrence();
+    Flag& get_flag();
 
 protected:
     GTD_RESULT create() override final;
@@ -141,6 +147,9 @@ private:
     std::chrono::system_clock::time_point starred_date;
 
     std::string note;
+    Reminder reminder;
+    Recurrence recurrence;
+    Flag flag;
     TaskTable taskTable;
 };
 

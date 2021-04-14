@@ -9,9 +9,19 @@
 
 class Recurrence: public Crud {
 public:
-
+    Recurrence() = delete;
+    explicit Recurrence(DataBase& dataBase);
+    Recurrence(const Recurrence&) = default;
+    Recurrence& operator=(const Recurrence&) = default;
+    Recurrence(Recurrence&&) = default;
+    Recurrence& operator=(Recurrence&&) = default;
+protected:
+    GTD_RESULT create() override final;
+    GTD_RESULT update() override final;
+    GTD_RESULT remove() override final;
+    GTD_RESULT query() override final;
 private:
-    ReminderTable reminderTable;
+    RecurrenceTable recurrenceTable;
 };
 
 
