@@ -154,12 +154,15 @@ private:
 class Crud {
 public:
     Crud() = delete;
-    Crud(DataBase& db): datebase(db){};
+    Crud(DataBase& db): database(db){};
     Crud(const Crud& crud) = default;
     Crud& operator=(const Crud& crud) = default;
     Crud(Crud&& crud) = default;
     Crud& operator=(Crud&& crud) = default;
 
+    bool operator==(const Crud& crud) const {
+        return &database.sql() == &crud.database.sql();
+    };
     virtual GTD_RESULT create() = 0;
     virtual GTD_RESULT update() = 0;
     virtual GTD_RESULT remove() = 0;
@@ -168,7 +171,7 @@ public:
     virtual ~Crud() = default;
 
 protected:
-    DataBase& datebase;
+    DataBase& database;
 };
 
 

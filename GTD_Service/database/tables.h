@@ -62,38 +62,39 @@ struct NoteTable {
 
 struct ReminderTable {
     int64_t reminder_id = ID_UNINIT;
-    uint64_t reminder_actions;
-    int32_t repeat_counter;
-    int32_t stop_after;
-    double repeat_interval;
-    int32_t hidden;
-    int32_t auto_repeat;
-    int32_t dismissed;
-    int32_t endless_repetition;
-    int64_t local_next_alert;
-    int64_t local_reminder_date;
-    int32_t use_individual_actions;
+    int64_t reminder_actions;    //开关
+    int32_t repeat_counter;      //重复计数器
+    int32_t stop_after;          //多少个后停止
+    int32_t repeat_interval;     //重复间隔时间
+    int32_t hidden;              //
+    int32_t auto_repeat;         //重复开关
+    int32_t dismissed;           //解雇闹钟， 之后不在提醒
+    int32_t endless_repetition;  //一直重复
+    int64_t local_reminder_date; //提醒时间
+    int64_t local_next_alert;    //下一次提醒时间
+    int32_t use_individual_actions;  //自定义提示行为
+    //auto operator<=>(const ReminderTable&) const = default;
 };
 
 struct RecurrenceTable {
     int64_t recurrence_id = ID_UNINIT;
-    int32_t day_of_month;
-    int32_t day_of_week_mask;
-    int32_t month_of_year;
-    int32_t pattern_instance;
-    int32_t recur_when_subtask_completed;
-    int32_t recurrence_pattern;
-    int32_t generated_count;
-    int32_t interval;
+    int32_t recurrence_pattern;     //循环方式: 小时, 天, 周, 月, 年
+    int32_t pattern_instance;       //
+    int32_t day_of_week_mask;       //每周哪几天重复
+    int32_t day_of_month;           //每月第几天重复
+    int32_t month_of_year;          //每年第几月重复
+    int32_t generated_count;        //计数
+    int32_t interval;               //间隔
     int32_t occurrences;
-    double hourly_delta;
-    int32_t do_not_create_completed_copy;
+    int64_t use_completion_date;
+    int64_t pattern_start_date;
+    int64_t pattern_end_date;
+    int32_t hourly_delta;           //预计时间
     int32_t hidden;
+    int32_t recur_when_subtask_completed;
+    int32_t do_not_create_completed_copy;
     int32_t uncomplete_subtasks;
     int32_t uncomplete_subtasks_if_all_checked;
-    int64_t use_completion_date;
-    int64_t pattern_end_date;
-    int64_t pattern_start_date;
 };
 
 struct FlagTable {

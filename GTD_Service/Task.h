@@ -10,6 +10,7 @@
 #include "Reminder.h"
 #include "Recurrence.h"
 #include "Flag.h"
+#include "Note.h"
 
 class Task: protected Crud {
 public:
@@ -146,7 +147,7 @@ private:
     std::chrono::system_clock::time_point next_review_date;
     std::chrono::system_clock::time_point starred_date;
 
-    std::string note;
+    Note note;
     Reminder reminder;
     Recurrence recurrence;
     Flag flag;

@@ -13,6 +13,7 @@ Task::Task(DataBase &dataBase) : Crud(dataBase),
                                  reminder(dataBase),
                                  recurrence(dataBase),
                                  flag(dataBase),
+                                 note(dataBase),
                                  taskTable({}) {
     taskTable.task_id = ID_UNINIT;
     taskTable.inherit_date = true;
@@ -33,7 +34,7 @@ GTD_RESULT Task::create() {
     if(taskTable.task_id != ID_UNINIT) {
         return GTD_PARA_INVALID;
     }
-    taskTable.task_id = datebase.sql().insert(taskTable);
+    taskTable.task_id = database.sql().insert(taskTable);
     return GTD_OK;
 }
 
@@ -42,7 +43,7 @@ GTD_RESULT Task::update() {
         return GTD_PARA_INVALID;
     }
 
-    datebase.sql().update(taskTable);
+    database.sql().update(taskTable);
     return GTD_OK;
 }
 
@@ -50,7 +51,7 @@ GTD_RESULT Task::remove() {
     if(taskTable.task_id == ID_UNINIT) {
         return GTD_PARA_INVALID;
     }
-    datebase.sql().remove_all<TaskTable>(where(c(&TaskTable::task_id) == taskTable.task_id));
+    database.sql().remove_all<TaskTable>(where(c(&TaskTable::task_id) == taskTable.task_id));
     taskTable.task_id = ID_UNINIT;
     return GTD_OK;
 }
@@ -59,7 +60,7 @@ GTD_RESULT Task::query() {
     if(taskTable.task_id == ID_UNINIT) {
         return GTD_PARA_INVALID;
     }
-    auto all = datebase.sql().get_all<TaskTable>(where(c(&TaskTable::task_id) == taskTable.task_id));
+    auto all = database.sql().get_all<TaskTable>(where(c(&TaskTable::task_id) == taskTable.task_id));
     if(all.empty()) {
         return GTD_PARA_INVALID;
     }
@@ -194,11 +195,11 @@ boost::uuids::uuid Task::get_uuid() const {
 }
 
 std::string Task::get_note() const {
-    return note;
+    return note.get_note();
 }
 
 void Task::set_note(std::string note) {
-    this->note = note;
+    this->note.set_note(note);
 }
 
 bool Task::is_inherit_date() const {

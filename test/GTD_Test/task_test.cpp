@@ -5,8 +5,7 @@
 #include <gtest/gtest.h>
 #include "../../GTD_Service/Task.h"
 
-TEST(GTD_Task, Init)
-{
+TEST(GTD_Task, Init) {
     DataBase dataBase("./sqlite.db");
     Task task(dataBase);
 

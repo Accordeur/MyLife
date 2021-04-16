@@ -6,8 +6,7 @@
 #include <gtest/gtest.h>
 #include "../../GTD_Service/Note.h"
 
-TEST(GTD_Note, Init)
-{
+TEST(GTD_Note, Init) {
     DataBase dataBase("./sqlite.db");
     Note note(dataBase);
 
@@ -32,11 +31,13 @@ TEST(GTD_Note, SQL) {
     EXPECT_EQ(note1.get_note(), note.get_note());
 
     dataBase.sql().remove_all<NoteTable>();
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 100; i++) {
         Note note2(dataBase);
         note2.set_note("Note Test");
         EXPECT_EQ(note2.create(), GTD_OK);
+        EXPECT_EQ(note2.get_id(), i+1);
     }
-    auto arr = dataBase.sql().get_all<NoteTable>(where(c(&NoteTable::note_id) < 10000));
-    EXPECT_EQ(arr.size(), 1000);
+    auto arr = dataBase.sql().get_all<NoteTable>(where(c(&NoteTable::note_id) < 1000));
+    EXPECT_EQ(arr.size(), 100);
+    dataBase.sql().remove_all<NoteTable>();
 }
