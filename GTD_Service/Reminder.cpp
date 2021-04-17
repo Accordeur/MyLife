@@ -182,8 +182,6 @@ void Reminder::refresh_timer() {
         reminderTable.dismissed = true;
     }
 
-
-
 }
 
 bool Reminder::is_active() const {
@@ -195,5 +193,32 @@ bool Reminder::is_active() const {
 
 uint32_t Reminder::current_repeat_count() const {
     return reminderTable.repeat_counter;
+}
+
+GTD_RESULT Reminder::remind_ones(const std::chrono::time_point<std::chrono::system_clock>& time) {
+    auto id = reminderTable.reminder_id;
+    reminderTable = {};
+    reminderTable.reminder_id = id;
+    enable_reminder(true);
+    set_reminder_date(time);
+    return GTD_OK;
+}
+
+GTD_RESULT Reminder::remind_repeatable(const std::chrono::time_point<std::chrono::system_clock> &time,
+                                       const std::chrono::minutes& interval, uint32_t stop_after) {
+    auto id = reminderTable.reminder_id;
+    reminderTable = {};
+    reminderTable.reminder_id = id;
+    enable_reminder(true);
+    enable_repeat(true);
+    set_reminder_date(time);
+    if(stop_after == 0) {
+        repeat_forever(true);
+    } else {
+        repeat_forever(false);
+        this->stop_after(stop_after);
+    }
+    set_repeat_interval(interval);
+    return GTD_OK;
 }
 

@@ -51,6 +51,9 @@ public:
     bool is_timeout() const;
     void refresh_timer();
 
+    GTD_RESULT remind_ones(const std::chrono::time_point<std::chrono::system_clock>& time);
+    GTD_RESULT remind_repeatable(const std::chrono::time_point<std::chrono::system_clock>& time,
+                                 const std::chrono::minutes& interval, uint32_t stop_after = 0);
 protected:
     GTD_RESULT create() override final;
     GTD_RESULT update() override final;

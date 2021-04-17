@@ -69,7 +69,8 @@ TEST(GTD_Reminder, Timer) {
     EXPECT_EQ(reminder.is_enable(), true);
     EXPECT_EQ(reminder.is_repeat_forever(), false);
 
-    //重复无限定时器
+    //无限重复定时器
+    /*
     reminder.enable_reminder(true);
     reminder.enable_repeat(true);
     reminder.repeat_forever(true);
@@ -87,4 +88,27 @@ TEST(GTD_Reminder, Timer) {
     EXPECT_EQ(reminder.is_active(), true);
     EXPECT_EQ(reminder.is_enable(), true);
     EXPECT_EQ(reminder.current_repeat_count(),10);
+    */
+
+    //有限重复定时器
+    /*
+    reminder.enable_reminder(true);
+    reminder.enable_repeat(true);
+    reminder.repeat_forever(false);
+    reminder.stop_after(3);
+    reminder.set_reminder_date(std::chrono::system_clock::now() + 50ms);
+    reminder.set_repeat_interval(1min);
+    for(int i = 0; i < 3; i++) {
+        EXPECT_EQ(reminder.is_active(), true);
+        EXPECT_EQ(reminder.is_timeout(), false);
+        std::this_thread::sleep_for(1min);
+        EXPECT_EQ(reminder.is_timeout(), true);
+        EXPECT_EQ(reminder.is_active(), true);
+        reminder.refresh_timer();
+        EXPECT_EQ(reminder.current_repeat_count(), i+1);
+    }
+    EXPECT_EQ(reminder.is_active(), false);
+    EXPECT_EQ(reminder.is_enable(), true);
+    EXPECT_EQ(reminder.current_repeat_count(),3);
+    */
 }
