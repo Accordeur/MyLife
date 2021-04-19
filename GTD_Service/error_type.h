@@ -8,6 +8,7 @@
 enum GTD_RESULT : int32_t {
     GTD_OK = 0,
     GTD_PARA_INVALID,
+    GTD_ID_HAS_EXIST,
     GTD_UNKNOWN
 };
 #endif //MYLIFE_ERROR_TYPE_H

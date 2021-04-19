@@ -21,7 +21,6 @@ file(GLOB_RECURSE TEST_SRC_LIST "test/*.cpp")
 file(GLOB_RECURSE GTD_SRC_LIST "GTD_Service/*.cpp")
 add_executable(MyLife main.cpp ${GTD_SRC_LIST} ${TEST_SRC_LIST})
 
-
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlite_orm::sqlite_orm)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
 target_link_libraries(${PROJECT_NAME} PRIVATE glog::glog)

@@ -78,18 +78,21 @@ struct ReminderTable {
 
 struct RecurrenceTable {
     int64_t recurrence_id = ID_UNINIT;
+    int32_t calendar;               //日历选择: 阴历, 阳历
     int32_t recurrence_pattern;     //循环方式: 小时, 天, 周, 月, 年
     int32_t pattern_instance;       //
     int32_t day_of_week_mask;       //每周哪几天重复
-    int32_t day_of_month;           //每月第几天重复
+    int32_t of_month;               //每月第几天重复
     int32_t month_of_year;          //每年第几月重复
-    int32_t generated_count;        //计数
     int32_t interval;               //间隔
-    int32_t occurrences;
-    int64_t use_completion_date;
+    int32_t skip;                   //跳过节假日,周末
     int64_t pattern_start_date;
     int64_t pattern_end_date;
-    int32_t hourly_delta;           //预计时间
+    int32_t hourly_delta;           //提前时间
+    int32_t end_type;               //一直循环，固定次数后停止，某一日期后停止
+    int32_t generated_count;        //计数
+    int32_t occurrences;            //重复次数
+    int64_t use_completion_date;
     int32_t hidden;
     int32_t recur_when_subtask_completed;
     int32_t do_not_create_completed_copy;
