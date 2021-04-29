@@ -22,25 +22,31 @@ public:
     Task& operator=(Task&& task) = default;
 
     enum class Effort: int32_t {
-        Relaxed = 20,
-        Easy = 40,
+        MinEffort = 20,
+        LittleEffort = 40,
+        LessEffort = 50,
         Normal = 60,
-        Hard = 80,
-        Crazy = 100
+        MoreEffort = 70,
+        LotEffort = 80,
+        MaxEffort = 100
     };
     enum class Importance: int32_t {
-        Unimportant = 20,
+        MinImportant = 20,
         LittleImportant = 40,
+        LessImportant = 50,
         Normal = 60,
-        SomeImportant = 80,
-        VeryImportant = 100
+        MoreImportant = 80,
+        LotImportant = 90,
+        MaxImportant = 100
     };
     enum class Urgency: int32_t {
-        NonUrgent = 20,
+        MinUrgent = 20,
         LittleUrgent = 40,
+        LessUrgent = 50,
         Normal = 60,
-        SomeUrgent = 80,
-        VeryUrgent = 100
+        MoreUrgent = 80,
+        LotUrgent = 90,
+        MaxUrgent = 100
     };
     enum class ProjectStatus: int32_t {
         NoStarted = 25,
@@ -55,6 +61,12 @@ public:
         Month,
         Quarter,
         Year
+    };
+
+    enum class DeleteFlag: int32_t {
+        None = 0,
+        MoveToGarbage = 1,
+        Delete = 2
     };
 
     [[nodiscard]] std::string get_title() const;
@@ -151,6 +163,7 @@ private:
     Reminder reminder;
     Recurrence recurrence;
     Flag flag;
+
     TaskTable taskTable;
 };
 

@@ -14,6 +14,7 @@ find_package(glog CONFIG REQUIRED)
 find_package(CAF REQUIRED COMPONENTS core io)
 find_package(Boost REQUIRED)
 find_package(Threads REQUIRED)
+find_package(date CONFIG REQUIRED)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -28,7 +29,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CAF_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CAF_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CAF_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost)
-target_link_libraries(${PROJECT_NAME}  ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE date::date date::date-tz)
 
 
 add_test(Test MyLifeTests)

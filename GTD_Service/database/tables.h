@@ -53,6 +53,7 @@ struct TaskTable {
     int64_t parent_id;
     int32_t subtask_ordinal;
     std::string text_tag;
+    int32_t delete_flag;
 };
 
 struct NoteTable {
@@ -88,7 +89,7 @@ struct RecurrenceTable {
     int32_t skip;                   //跳过节假日,周末
     int64_t pattern_start_date;
     int64_t pattern_end_date;
-    int32_t hourly_delta;           //提前时间
+    int32_t hourly_delta;           //锁定时间段
     int32_t end_type;               //一直循环，固定次数后停止，某一日期后停止
     int32_t generated_count;        //计数
     int32_t occurrences;            //重复次数

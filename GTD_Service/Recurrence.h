@@ -10,7 +10,7 @@
 
 class Recurrence: public Crud {
 public:
-    enum class Pattern {
+    enum class Pattern: int32_t {
         None = 0,
         Hour = 1,
         Daily,
@@ -19,13 +19,14 @@ public:
         Yearly
     };
 
-    enum class PatternInstance {
+    enum class PatternInstance: int32_t {
         ByDay,
-        ByWeek,
+        ByWeekday,
         ByComplete
     };
 
-    enum class Week {
+    enum class Week: int32_t {
+        None = 0,
         Monday = 1,
         Tuesday = 2,
         Wednesday = 4,
@@ -37,15 +38,17 @@ public:
         LastDay = 256
     };
 
-    enum class OrdinalWeek {
+    enum class OrdinalWeek: int32_t {
+        None = 0,
         First = 1,
         Second,
         Third,
         Fourth,
         Last
     };
-    enum class Month {
-        Jan,
+    enum class Month: int32_t {
+        None = 0,
+        Jan = 0,
         Feb,
         Mar,
         Apr,
@@ -59,17 +62,17 @@ public:
         Dec
     };
 
-    enum class Skip {
+    enum class Skip: int32_t {
         NoSkip = 0,
         Holiday = 1,
         Weekend = 2,
     };
-    enum class Calendar {
+    enum class Calendar: int32_t {
         Solar = 1,
         Lunar
     };
 
-    enum class EndType {
+    enum class EndType: int32_t {
         NoEnd = 1,  //从不停止
         EndAfter,   //多少次后停止
         EndUntil    //直到某日停止
@@ -79,13 +82,13 @@ public:
         enum Calendar calendar = Calendar::Solar;
         enum Pattern recurrence_pattern = Pattern::None;   //循环频率: 小时, 天, 周, 月, 年
         enum PatternInstance pattern_instance = PatternInstance::ByDay;//计算方式: 完成后生成，到期后生成（按天算，按星期算）
-        enum Week day_of_week_mask = Week::Monday;                           //周哪几天重复
-        int32_t of_month = 0;                                   //月第几天/周重复, 不要直接使用
-        enum Month month_of_year = Month::Jan;                              //年第几月重复
+        enum Week day_of_week_mask = Week::None;                           //周哪几天重复
+        enum Month month_of_year = Month::None;                              //年第几月重复
         int32_t interval = 0;                                   //间隔
         enum Skip skip = Skip::NoSkip;                                //跳过节假日,周末
-        #define week_of_month  of_month                             //月第几周重复
-        #define day_of_month of_month                               //月第几天重复
+        enum OrdinalWeek week_of_month = OrdinalWeek::None;                            //月第几周重复
+        int32_t day_of_month = 0;                               //月第几天重复
+        //int32_t of_month = 0;                                   //月第几天/周重复, 被day_of_month，week_of_month替代
         bool operator==(const RecurConfig&)const = default;
     };
 
@@ -113,12 +116,19 @@ public:
     uint32_t get_occur_times() const;
     std::chrono::time_point<std::chrono::system_clock> get_occur_until() const;
 
+    GTD_RESULT completed_current();
+    bool is_ended() const;
+    std::tuple<std::chrono::time_point<std::chrono::system_clock>,
+            std::chrono::time_point<std::chrono::system_clock>> get_next_date() const;
+
 protected:
     GTD_RESULT create() override final;
     GTD_RESULT update() override final;
     GTD_RESULT remove() override final;
     GTD_RESULT query() override final;
 private:
+    GTD_RESULT checkRecurConfig(const RecurConfig& config) const;
+
     RecurrenceTable recurrenceTable;
 
     FRIEND_TEST(GTD_Recurrence, SQL);
