@@ -14,3 +14,7 @@ TEST(GTD_Recurrence, Init) {
 TEST(GTD_Recurrence, SQL) {
 
 }
+
+TEST(GTD_Recurrence, get_next_date){
+
+}

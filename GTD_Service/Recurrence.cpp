@@ -155,40 +155,6 @@ GTD_RESULT Recurrence::completed_current() {
     return GTD_ID_HAS_EXIST;
 }
 
-bool Recurrence::is_ended() const {
-    //未开启循环模式
-    if(recurrenceTable.recurrence_id == ID_UNINIT || recurrenceTable.recurrence_pattern == static_cast<int32_t>(Pattern::None)) {
-        return true;
-    }
-    //从不结束循环模式
-    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::NoEnd)) {
-        return false;
-    }
-
-    //指定次数后停止
-    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::EndUntil)) {
-        if(recurrenceTable.generated_count < recurrenceTable.occurrences) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    //某一日期后停止
-    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::EndAfter)) {
-        if(recurrenceTable.generated_count < recurrenceTable.occurrences) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    return false;
-}
-
-std::tuple<std::chrono::time_point<std::chrono::system_clock>,
-        std::chrono::time_point<std::chrono::system_clock>> Recurrence::get_next_date() const {
-    return std::tuple<std::chrono::time_point<std::chrono::system_clock>, std::chrono::time_point<std::chrono::system_clock>>();
-}
 GTD_RESULT Recurrence::checkRecurConfig(const Recurrence::RecurConfig &config) const {
 
     switch(config.recurrence_pattern) {
@@ -203,7 +169,7 @@ GTD_RESULT Recurrence::checkRecurConfig(const Recurrence::RecurConfig &config) c
         case Pattern::None: {
             return GTD_PARA_INVALID;
         }
-        case Pattern::Hour:
+        case Pattern::Hourly:
         case Pattern::Daily: {
             if(config.interval <= 0 || config.interval > 31) {
                 return GTD_PARA_INVALID;
@@ -263,5 +229,111 @@ GTD_RESULT Recurrence::checkRecurConfig(const Recurrence::RecurConfig &config) c
         }
     }
     return GTD_OK;
+}
+
+std::chrono::time_point<std::chrono::system_clock>
+Recurrence::get_next(std::chrono::time_point<std::chrono::system_clock> start) const {
+    using namespace std::chrono;
+    if(is_ended(start)) {
+        return std::chrono::time_point<std::chrono::system_clock>();
+    }
+    auto config = get_recur_config();
+    auto pattern_end_date = time_point<system_clock>(milliseconds(recurrenceTable.pattern_end_date));
+    if(start <= pattern_end_date) {
+        return pattern_end_date;
+    }
+
+    switch (config.recurrence_pattern) {
+        case Pattern::None: {
+            return {};
+        }
+        case Pattern::Minutely: {
+            auto interval_minutes = duration_cast<minutes>(start - pattern_end_date);
+            auto mod_minutes = interval_minutes % config.interval;
+            if(mod_minutes == minutes(0)) {
+                return start;
+            } else {
+                return start + minutes(config.interval) - mod_minutes;
+            }
+        }
+        case Pattern::Hourly: {
+            auto interval_hours = duration_cast<hours>(start - pattern_end_date);
+            auto mod_hours = interval_hours % config.interval;
+            if(mod_hours == hours(0)) {
+                return start;
+            } else {
+                return start + hours(config.interval) - mod_hours;
+            }
+        }
+        case Pattern::Daily: {
+            auto interval_days = duration_cast<date::days>(start - pattern_end_date);
+            auto mod_days = interval_days % (config.interval);
+            if(mod_days == hours(0)) {
+                return start;
+            } else {
+                return start + hours(config.interval) - mod_days;
+            }
+        }
+        case Pattern::Weekly: {
+
+            if(config.day_of_week_mask == Week::None) {
+                auto interval_weeks = duration_cast<date::weeks>(start - pattern_end_date);
+                auto mod_weeks = interval_weeks % (config.interval);
+                if(mod_weeks == hours(0)) {
+                    return start;
+                } else {
+                    return start + hours(config.interval) - mod_weeks;
+                }
+            }
+
+            date::year_month_weekday pattern_end_week = floor<date::days>(pattern_end_date);
+            date::year_month_weekday adjuster_monday = date::year_month_weekday(pattern_end_week.year(),
+                                                                                pattern_end_week.month(),
+                                                                                date::weekday_indexed(date::Monday, pattern_end_week.index()));
+            //TODO:
+
+
+
+        }
+    }
+    return std::chrono::time_point<std::chrono::system_clock>();
+}
+
+std::vector<std::chrono::time_point<std::chrono::system_clock>>
+Recurrence::occur_in(std::chrono::time_point<std::chrono::system_clock> start,
+                     std::chrono::time_point<std::chrono::system_clock> due) const {
+    return std::vector<std::chrono::time_point<std::chrono::system_clock>>();
+}
+
+bool Recurrence::is_ended(std::chrono::time_point<std::chrono::system_clock> time) const {
+    using namespace std::chrono;
+    //未开启循环模式
+    if(recurrenceTable.recurrence_id == ID_UNINIT || recurrenceTable.recurrence_pattern == static_cast<int32_t>(Pattern::None)) {
+        return true;
+    }
+    //从不结束循环模式
+    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::NoEnd)) {
+        return false;
+    }
+
+    //指定次数后停止
+    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::EndUntil)) {
+        if(recurrenceTable.generated_count < recurrenceTable.occurrences) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    //某一日期后停止
+    if(recurrenceTable.end_type == static_cast<int32_t>(EndType::EndAfter)) {
+
+        if(time_point_cast<milliseconds>(time).time_since_epoch().count() <= recurrenceTable.use_completion_date) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
 

@@ -10,9 +10,11 @@
 
 class Recurrence: public Crud {
 public:
+    //Hourly, Daily, Weekly, Monthly, Yearly
     enum class Pattern: int32_t {
         None = 0,
-        Hour = 1,
+        Minutely = 1,
+        Hourly = 2,
         Daily,
         Weekly,
         Monthly,
@@ -26,16 +28,16 @@ public:
     };
 
     enum class Week: int32_t {
-        None = 0,
-        Monday = 1,
-        Tuesday = 2,
-        Wednesday = 4,
-        Thursday = 8,
-        Friday = 16,
-        Saturday = 32,
-        Sunday = 64,
-        FirstDay = 128,
-        LastDay = 256
+        None = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x4,
+        Thursday = 0x8,
+        Friday = 0x10,
+        Saturday = 0x20,
+        Sunday = 0x40,
+        FirstDay = 0x80,
+        LastDay = 0x100
     };
 
     enum class OrdinalWeek: int32_t {
@@ -48,7 +50,7 @@ public:
     };
     enum class Month: int32_t {
         None = 0,
-        Jan = 0,
+        Jan = 1,
         Feb,
         Mar,
         Apr,
@@ -117,9 +119,12 @@ public:
     std::chrono::time_point<std::chrono::system_clock> get_occur_until() const;
 
     GTD_RESULT completed_current();
-    bool is_ended() const;
-    std::tuple<std::chrono::time_point<std::chrono::system_clock>,
-            std::chrono::time_point<std::chrono::system_clock>> get_next_date() const;
+    bool is_ended(std::chrono::time_point<std::chrono::system_clock> time) const;
+    std::chrono::time_point<std::chrono::system_clock> get_next(std::chrono::time_point<std::chrono::system_clock> start) const;
+
+    std::vector<std::chrono::time_point<std::chrono::system_clock>>
+    occur_in(std::chrono::time_point<std::chrono::system_clock> start,
+                        std::chrono::time_point<std::chrono::system_clock> due) const;
 
 protected:
     GTD_RESULT create() override final;
@@ -128,7 +133,6 @@ protected:
     GTD_RESULT query() override final;
 private:
     GTD_RESULT checkRecurConfig(const RecurConfig& config) const;
-
     RecurrenceTable recurrenceTable;
 
     FRIEND_TEST(GTD_Recurrence, SQL);
