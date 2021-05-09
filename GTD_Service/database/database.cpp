@@ -4,12 +4,14 @@
 
 #include <iostream>
 #include "database.h"
+#include <date/tz.h>
 using namespace sqlite_orm;
 
 DataBase::DataBase(const std::filesystem::path& path): storage(initDB(path)){
     storage.sync_schema();
     //强制sqlite需要以串行模式运行
     assign(sqlite_orm::threadsafe(), 1);
+    date::set_install("./tzdata");
 }
 
 GTD_RESULT DataBase::create(Crud &crud) {

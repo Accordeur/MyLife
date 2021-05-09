@@ -71,7 +71,7 @@ public:
         Weekend = 2,
     };
     enum class Calendar: int32_t {
-        Solar = 1,
+        Solar = 0,
         Lunar
     };
 
@@ -122,6 +122,21 @@ public:
         bool operator >= (const Recurrence::DateTime& other) const {
             return !(*this < other);
         }
+
+    private:
+        date::local_seconds get_local_time_seconds() const {
+            return date::local_days(date) + time.to_duration();
+        }
+
+        date::local_time<std::chrono::milliseconds> get_local_time_milliseconds() const {
+            return date::local_days(date) + time.to_duration();
+        }
+        static DateTime from_local_time(const date::local_time<std::chrono::milliseconds>& r) {
+            using namespace std::chrono;
+            return DateTime(date::year_month_day(floor<date::days>(r)), date::time_of_day<seconds>(duration_cast<seconds>(r - floor<date::days>(r))));
+        }
+
+        friend class Recurrence;
     };
 
     Recurrence() = delete;

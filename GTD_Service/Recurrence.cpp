@@ -90,13 +90,13 @@ Recurrence::RecurConfig Recurrence::get_recur_config() const {
 
 GTD_RESULT Recurrence::set_period(const DateTime& start, const DateTime& end, bool lead) {
     using namespace std::chrono;
-    if(start < end) {
+    if(start > end) {
         return GTD_PARA_INVALID;
     }
 
-    recurrenceTable.pattern_start_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(start.date) + start.time.to_duration()))
+    recurrenceTable.pattern_start_date = date::make_zoned(date::current_zone(), start.get_local_time_milliseconds())
             .get_sys_time().time_since_epoch().count();
-    recurrenceTable.pattern_end_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(end.date) + end.time.to_duration()))
+    recurrenceTable.pattern_end_date = date::make_zoned(date::current_zone(), end.get_local_time_milliseconds())
             .get_sys_time().time_since_epoch().count();
 
     if(lead) {
@@ -139,7 +139,7 @@ GTD_RESULT Recurrence::set_end_occur_times(EndType type, uint32_t times) {
         return GTD_PARA_INVALID;
     }
 
-    recurrenceTable.end_type = static_cast<int32_t>(EndType::EndAfter);
+    recurrenceTable.end_type = static_cast<int32_t>(type);
     recurrenceTable.occurrences = times;
     return GTD_OK;
 }
@@ -149,7 +149,7 @@ Recurrence::set_end_occur_day(const Recurrence::DateTime& date) {
     using namespace std::chrono;
 
     recurrenceTable.end_type = static_cast<int32_t>(EndType::EndUntil);
-    recurrenceTable.use_completion_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(date.date)))
+    recurrenceTable.use_completion_date = date::make_zoned(date::current_zone(), date.get_local_time_milliseconds())
             .get_sys_time().time_since_epoch().count();
     return GTD_OK;
 }
@@ -255,23 +255,73 @@ Recurrence::DateTime Recurrence::get_next(const Recurrence::DateTime& time) cons
     }
     //ToDO:
 
+    auto end_date = date::make_zoned(date::current_zone(), date::sys_time<milliseconds>(milliseconds(recurrenceTable.pattern_end_date)));
+    auto start_date = date::make_zoned(date::current_zone(), date::sys_time<milliseconds>(milliseconds(recurrenceTable.pattern_start_date)));
+
+    if(time.get_local_time_milliseconds() <= end_date.get_local_time()) {
+        auto day = date::year_month_day(floor<date::days>(end_date.get_local_time()));
+        return DateTime(day, date::time_of_day<seconds>(duration_cast<seconds>(end_date.get_local_time() - date::local_days(day))));
+    }
+
     auto config = get_recur_config();
 
+    if(config.pattern_instance == PatternInstance::ByComplete) {
+        return DateTime({});
+    }
     switch (config.recurrence_pattern) {
         case Pattern::None: {
             return DateTime({});
         }
         case Pattern::Minutely: {
+            auto interval = minutes(config.interval);
+            auto mod = (time.get_local_time_milliseconds() - end_date.get_local_time()) % interval;
 
+            if(mod == minutes(0)) {
+                return time;
+            } else {
+                auto result = time.get_local_time_milliseconds() + (interval - mod);
+                return DateTime::from_local_time(result);
+            }
         }
         case Pattern::Hourly: {
+            auto interval = hours(config.interval);
+            auto mod = (time.get_local_time_milliseconds() - end_date.get_local_time()) % interval;
 
+            if(mod == hours(0)) {
+                return time;
+            } else {
+                auto result = time.get_local_time_milliseconds() + (interval - mod);
+                return DateTime::from_local_time(result);
+            }
         }
         case Pattern::Daily: {
+            auto interval = date::days(config.interval);
+            auto mod = (time.get_local_time_milliseconds() - end_date.get_local_time()) % interval;
 
+            if(mod == date::days(0)) {
+                return time;
+            } else {
+                auto result = time.get_local_time_milliseconds() + (interval - mod);
+                return DateTime::from_local_time(result);
+            }
         }
         case Pattern::Weekly: {
+            if(config.pattern_instance != PatternInstance::ByWeekday || config.day_of_week_mask == Week::None) {
+                return DateTime({});
+            }
+            auto interval = date::weeks(config.interval);
+            auto mod = (time.get_local_time_milliseconds() - start_date.get_local_time()) % interval;
 
+            if(mod == date::weeks(0)) {
+
+            } else {
+                auto base_time = time.get_local_time_milliseconds() + (interval - mod);
+            }
+        }
+        case Pattern::Monthly: {
+
+        }
+        case Pattern::Yearly: {
 
         }
     }
@@ -286,7 +336,7 @@ std::vector<Recurrence::DateTime> Recurrence::occur_in(const DateTime& start, co
 bool Recurrence::is_ended(Recurrence::DateTime time) const {
     using namespace std::chrono;
     //未开启循环模式
-    if(recurrenceTable.recurrence_id == ID_UNINIT || recurrenceTable.recurrence_pattern == static_cast<int32_t>(Pattern::None)) {
+    if(/*recurrenceTable.recurrence_id == ID_UNINIT ||*/ recurrenceTable.recurrence_pattern == static_cast<int32_t>(Pattern::None)) {
         return true;
     }
     //从不结束循环模式
