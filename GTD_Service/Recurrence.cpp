@@ -88,53 +88,69 @@ Recurrence::RecurConfig Recurrence::get_recur_config() const {
     return config;
 }
 
-GTD_RESULT Recurrence::set_period(std::chrono::time_point<std::chrono::system_clock> start,
-                                  std::chrono::time_point<std::chrono::system_clock> due, std::chrono::minutes lead) {
+GTD_RESULT Recurrence::set_period(const DateTime& start, const DateTime& end, bool lead) {
     using namespace std::chrono;
-    if(due <= start) {
+    if(start < end) {
         return GTD_PARA_INVALID;
     }
 
-    recurrenceTable.pattern_start_date = time_point_cast<milliseconds>(start).time_since_epoch().count();
-    recurrenceTable.pattern_end_date = time_point_cast<milliseconds>(due).time_since_epoch().count();
+    recurrenceTable.pattern_start_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(start.date) + start.time.to_duration()))
+            .get_sys_time().time_since_epoch().count();
+    recurrenceTable.pattern_end_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(end.date) + end.time.to_duration()))
+            .get_sys_time().time_since_epoch().count();
 
-    recurrenceTable.hourly_delta = lead.count();
+    if(lead) {
+        recurrenceTable.hourly_delta = recurrenceTable.pattern_end_date - recurrenceTable.pattern_start_date;
+    } else {
+        recurrenceTable.hourly_delta = 0;
+    }
+
     return GTD_OK;
 }
 
-std::chrono::time_point<std::chrono::system_clock> Recurrence::get_start_date() const {
+Recurrence::DateTime Recurrence::get_start_date() const {
     using namespace std::chrono;
     auto start_mil = milliseconds(recurrenceTable.pattern_start_date);
-    return std::chrono::time_point<std::chrono::system_clock>(start_mil);
+    auto zone_time = date::make_zoned(date::current_zone(), date::sys_time<milliseconds>(start_mil));
+    auto day = date::year_month_day(floor<date::days>(zone_time.get_local_time()));
+    auto time = date::make_time(floor<date::days>(zone_time.get_local_time()) - zone_time.get_local_time());
+
+    return DateTime(day, date::time_of_day<seconds>(duration_cast<seconds>(time.to_duration())));
 }
 
-std::chrono::time_point<std::chrono::system_clock> Recurrence::get_due_date() const {
+Recurrence::DateTime Recurrence::get_due_date() const {
+
     using namespace std::chrono;
-    auto due_mil = milliseconds(recurrenceTable.pattern_end_date);
-    return std::chrono::time_point<std::chrono::system_clock>(due_mil);
+    auto end_mil = milliseconds(recurrenceTable.pattern_end_date);
+    auto zone_time = date::make_zoned(date::current_zone(), date::sys_time<milliseconds>(end_mil));
+    auto day = date::year_month_day(floor<date::days>(zone_time.get_local_time()));
+    auto time = date::make_time(floor<date::days>(zone_time.get_local_time()) - zone_time.get_local_time());
+
+    return DateTime(day, date::time_of_day<seconds>(duration_cast<seconds>(time.to_duration())));
 }
 
-std::chrono::minutes Recurrence::get_lead_time() const {
-    return std::chrono::minutes(recurrenceTable.hourly_delta);
+std::chrono::seconds Recurrence::get_lead_time() const {
+    using namespace std::chrono;
+    return duration_cast<seconds>(milliseconds(recurrenceTable.pattern_end_date - recurrenceTable.pattern_start_date));
 }
 
-GTD_RESULT Recurrence::set_end_occur(Recurrence::EndType type, uint32_t times) {
+GTD_RESULT Recurrence::set_end_occur_times(EndType type, uint32_t times) {
     if(type != EndType::EndAfter && type != EndType::NoEnd) {
         return GTD_PARA_INVALID;
     }
-    recurrenceTable.end_type = static_cast<int32_t>(type);
+
+    recurrenceTable.end_type = static_cast<int32_t>(EndType::EndAfter);
     recurrenceTable.occurrences = times;
     return GTD_OK;
 }
 
 GTD_RESULT
-Recurrence::set_end_occur(Recurrence::EndType type, std::chrono::time_point<std::chrono::system_clock> date) {
+Recurrence::set_end_occur_day(const Recurrence::DateTime& date) {
     using namespace std::chrono;
-    if(type != EndType::EndUntil) {
-        return GTD_PARA_INVALID;
-    }
-    recurrenceTable.end_type = static_cast<int32_t>(type);
-    recurrenceTable.use_completion_date = time_point_cast<milliseconds>(date).time_since_epoch().count();
+
+    recurrenceTable.end_type = static_cast<int32_t>(EndType::EndUntil);
+    recurrenceTable.use_completion_date = date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(date.date)))
+            .get_sys_time().time_since_epoch().count();
     return GTD_OK;
 }
 
@@ -146,9 +162,10 @@ uint32_t Recurrence::get_occur_times() const {
     return recurrenceTable.occurrences;
 }
 
-std::chrono::time_point<std::chrono::system_clock> Recurrence::get_occur_until() const {
+Recurrence::DateTime Recurrence::get_occur_until() const {
     using namespace std::chrono;
-    return time_point<system_clock>(milliseconds(recurrenceTable.use_completion_date));
+    auto zone_time =  date::make_zoned(date::current_zone(), date::sys_time<milliseconds>(milliseconds(recurrenceTable.use_completion_date)));
+    return DateTime(date::year_month_day(floor<date::days>(zone_time.get_local_time())), {});
 }
 
 GTD_RESULT Recurrence::completed_current() {
@@ -231,81 +248,42 @@ GTD_RESULT Recurrence::checkRecurConfig(const Recurrence::RecurConfig &config) c
     return GTD_OK;
 }
 
-std::chrono::time_point<std::chrono::system_clock>
-Recurrence::get_next(std::chrono::time_point<std::chrono::system_clock> start) const {
+Recurrence::DateTime Recurrence::get_next(const Recurrence::DateTime& time) const {
     using namespace std::chrono;
-    if(is_ended(start)) {
-        return std::chrono::time_point<std::chrono::system_clock>();
+    if(is_ended(time)) {
+        return DateTime({});
     }
+    //ToDO:
+
     auto config = get_recur_config();
-    auto pattern_end_date = time_point<system_clock>(milliseconds(recurrenceTable.pattern_end_date));
-    if(start <= pattern_end_date) {
-        return pattern_end_date;
-    }
 
     switch (config.recurrence_pattern) {
         case Pattern::None: {
-            return {};
+            return DateTime({});
         }
         case Pattern::Minutely: {
-            auto interval_minutes = duration_cast<minutes>(start - pattern_end_date);
-            auto mod_minutes = interval_minutes % config.interval;
-            if(mod_minutes == minutes(0)) {
-                return start;
-            } else {
-                return start + minutes(config.interval) - mod_minutes;
-            }
+
         }
         case Pattern::Hourly: {
-            auto interval_hours = duration_cast<hours>(start - pattern_end_date);
-            auto mod_hours = interval_hours % config.interval;
-            if(mod_hours == hours(0)) {
-                return start;
-            } else {
-                return start + hours(config.interval) - mod_hours;
-            }
+
         }
         case Pattern::Daily: {
-            auto interval_days = duration_cast<date::days>(start - pattern_end_date);
-            auto mod_days = interval_days % (config.interval);
-            if(mod_days == hours(0)) {
-                return start;
-            } else {
-                return start + hours(config.interval) - mod_days;
-            }
+
         }
         case Pattern::Weekly: {
-
-            if(config.day_of_week_mask == Week::None) {
-                auto interval_weeks = duration_cast<date::weeks>(start - pattern_end_date);
-                auto mod_weeks = interval_weeks % (config.interval);
-                if(mod_weeks == hours(0)) {
-                    return start;
-                } else {
-                    return start + hours(config.interval) - mod_weeks;
-                }
-            }
-
-            date::year_month_weekday pattern_end_week = floor<date::days>(pattern_end_date);
-            date::year_month_weekday adjuster_monday = date::year_month_weekday(pattern_end_week.year(),
-                                                                                pattern_end_week.month(),
-                                                                                date::weekday_indexed(date::Monday, pattern_end_week.index()));
-            //TODO:
-
 
 
         }
     }
-    return std::chrono::time_point<std::chrono::system_clock>();
+    return DateTime({});
 }
 
-std::vector<std::chrono::time_point<std::chrono::system_clock>>
-Recurrence::occur_in(std::chrono::time_point<std::chrono::system_clock> start,
-                     std::chrono::time_point<std::chrono::system_clock> due) const {
-    return std::vector<std::chrono::time_point<std::chrono::system_clock>>();
+std::vector<Recurrence::DateTime> Recurrence::occur_in(const DateTime& start, const DateTime& end) const {
+    return {};
 }
 
-bool Recurrence::is_ended(std::chrono::time_point<std::chrono::system_clock> time) const {
+
+bool Recurrence::is_ended(Recurrence::DateTime time) const {
     using namespace std::chrono;
     //未开启循环模式
     if(recurrenceTable.recurrence_id == ID_UNINIT || recurrenceTable.recurrence_pattern == static_cast<int32_t>(Pattern::None)) {
@@ -328,7 +306,7 @@ bool Recurrence::is_ended(std::chrono::time_point<std::chrono::system_clock> tim
     //某一日期后停止
     if(recurrenceTable.end_type == static_cast<int32_t>(EndType::EndAfter)) {
 
-        if(time_point_cast<milliseconds>(time).time_since_epoch().count() <= recurrenceTable.use_completion_date) {
+        if(date::make_zoned(date::current_zone(), floor<milliseconds>(date::local_days(time.date))).get_sys_time().time_since_epoch().count() <= recurrenceTable.use_completion_date) {
             return false;
         } else {
             return true;

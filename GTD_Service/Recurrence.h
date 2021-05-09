@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include "database/database.h"
 #include "database/tables.h"
+#include <date/tz.h>
 
 class Recurrence: public Crud {
 public:
@@ -94,6 +95,35 @@ public:
         bool operator==(const RecurConfig&)const = default;
     };
 
+    struct DateTime {
+        explicit DateTime(date::year_month_day d, date::time_of_day<std::chrono::seconds> t = {}) : date(d), time(t) {}
+        date::year_month_day date;
+        date::time_of_day<std::chrono::seconds> time;
+
+        bool operator == (const Recurrence::DateTime& other) const {
+            return date == other.date && time.to_duration() == other.time.to_duration();
+        }
+        bool operator != (const Recurrence::DateTime& other) const {
+            return !(*this == other);
+        }
+
+        bool operator <  (const Recurrence::DateTime& other) const {
+            return date::local_days(date) + time.to_duration() < date::local_days(other.date) + other.time.to_duration();
+        }
+
+        bool operator <=  (const Recurrence::DateTime& other) const {
+            return *this < other || *this == other;
+        }
+
+        bool operator > (const Recurrence::DateTime& other) const {
+            return !(*this <= other);
+        }
+
+        bool operator >= (const Recurrence::DateTime& other) const {
+            return !(*this < other);
+        }
+    };
+
     Recurrence() = delete;
     explicit Recurrence(DataBase& dataBase);
     Recurrence(const Recurrence&) = default;
@@ -104,33 +134,35 @@ public:
     GTD_RESULT set_recur(const RecurConfig& config);
     RecurConfig get_recur_config() const;
 
-    GTD_RESULT set_period(std::chrono::time_point<std::chrono::system_clock> start,
-                          std::chrono::time_point<std::chrono::system_clock> due,
-                          std::chrono::minutes lead = std::chrono::minutes(0));
-    std::chrono::time_point<std::chrono::system_clock> get_start_date() const;
-    std::chrono::time_point<std::chrono::system_clock> get_due_date() const;
-    std::chrono::minutes get_lead_time() const;
+    GTD_RESULT set_period(const DateTime& start, const DateTime& end,
+                          bool lead = false);
 
-    GTD_RESULT set_end_occur(enum EndType type, uint32_t times = 0);
-    GTD_RESULT set_end_occur(enum EndType type, std::chrono::time_point<std::chrono::system_clock> date);
+    DateTime get_start_date() const;
+    DateTime get_due_date() const;
+
+
+    std::chrono::seconds get_lead_time() const;
+
+
+    GTD_RESULT set_end_occur_times(EndType type, uint32_t times = 0);
+    GTD_RESULT set_end_occur_day(const DateTime& date);
 
     enum EndType get_end_type() const;
     uint32_t get_occur_times() const;
-    std::chrono::time_point<std::chrono::system_clock> get_occur_until() const;
+    DateTime get_occur_until() const;
 
     GTD_RESULT completed_current();
-    bool is_ended(std::chrono::time_point<std::chrono::system_clock> time) const;
-    std::chrono::time_point<std::chrono::system_clock> get_next(std::chrono::time_point<std::chrono::system_clock> start) const;
+    bool is_ended(DateTime time) const;
+    DateTime get_next(const DateTime& time) const;
 
-    std::vector<std::chrono::time_point<std::chrono::system_clock>>
-    occur_in(std::chrono::time_point<std::chrono::system_clock> start,
-                        std::chrono::time_point<std::chrono::system_clock> due) const;
+    std::vector<DateTime> occur_in(const DateTime& start, const DateTime& end) const;
 
 protected:
     GTD_RESULT create() override final;
     GTD_RESULT update() override final;
     GTD_RESULT remove() override final;
     GTD_RESULT query() override final;
+
 private:
     GTD_RESULT checkRecurConfig(const RecurConfig& config) const;
     RecurrenceTable recurrenceTable;
