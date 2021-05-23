@@ -304,19 +304,77 @@ Recurrence::DateTime Recurrence::get_next(const Recurrence::DateTime& time) cons
                 auto result = time.get_local_time_milliseconds() + (interval - mod);
                 return DateTime::from_local_time(result);
             }
+            return DateTime({});
         }
         case Pattern::Weekly: {
             if(config.pattern_instance != PatternInstance::ByWeekday || config.day_of_week_mask == Week::None) {
                 return DateTime({});
             }
             auto interval = date::weeks(config.interval);
-            auto mod = (time.get_local_time_milliseconds() - start_date.get_local_time()) % interval;
+            auto mod = (time.get_local_time_milliseconds() - end_date.get_local_time()) % interval;
 
+            std::cout << mod << std::endl;
             if(mod == date::weeks(0)) {
-
+                return time;
             } else {
                 auto base_time = time.get_local_time_milliseconds() + (interval - mod);
+                auto first_date = adjustToFirst(DateTime::from_local_time(base_time));
+
+                if(mod < date::weeks(1)) {
+                    base_time = time.get_local_time_milliseconds();
+                    first_date = adjustToFirst(DateTime::from_local_time(base_time));
+                }
+
+                if(config.day_of_week_mask == Week::None) {
+                    return DateTime({});
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Monday)) {
+                    if(first_date >= time) {
+                        return first_date;
+                    }
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Tuesday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(1)), first_date.time});
+                    if(result >= time) {
+                        return result;
+                    }
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Wednesday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(2)), first_date.time});
+                    if(result >= time) {
+                        return result;
+                    }
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Thursday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(3)), first_date.time});
+                    if(result >= time) {
+                        return result;
+                    }
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Friday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(4)), first_date.time});
+                    if(result >= time) {
+                        return result;
+                    }
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Saturday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(5)), first_date.time});
+                }
+                if(static_cast<int32_t>(config.day_of_week_mask) | static_cast<int32_t>(Week::Sunday)) {
+                    auto result = Recurrence::DateTime(DateTime{
+                        date::year_month_day(date::local_days(first_date.date) + date::days(6)), first_date.time});
+                    if(result >= time) {
+                        return result;
+                    }
+                }
+                return DateTime({});
             }
+            return DateTime({});
         }
         case Pattern::Monthly: {
 
@@ -363,5 +421,15 @@ bool Recurrence::is_ended(Recurrence::DateTime time) const {
         }
     }
     return false;
+}
+
+Recurrence::DateTime Recurrence::adjustToFirst(Recurrence::DateTime time) const {
+    using namespace std::chrono;
+    auto date = time.date;
+    auto weekday = date::year_month_weekday(date::local_days(date));
+    auto interval = weekday.weekday() - date::Monday;
+    auto firstOfWeek = date::local_days(time.date) - interval;
+
+    return Recurrence::DateTime(DateTime{date::year_month_day(firstOfWeek), time.time});
 }
 

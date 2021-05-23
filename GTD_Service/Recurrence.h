@@ -180,6 +180,7 @@ protected:
 
 private:
     GTD_RESULT checkRecurConfig(const RecurConfig& config) const;
+    DateTime adjustToFirst(DateTime time) const;
     RecurrenceTable recurrenceTable;
 
     FRIEND_TEST(GTD_Recurrence, SQL);
